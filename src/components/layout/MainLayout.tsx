@@ -15,7 +15,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className="flex flex-col min-h-screen">
       <Header />
       {/* Mobile: Floating hamburger to open sidebar, only visible if sidebar is closed */}
-      {!sidebarOpen && <MobileSidebarToggle onClick={() => setSidebarOpen(true)} />}
+      {!sidebarOpen && <MobileSidebarToggle   onClick={() => setSidebarOpen(true)} />}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar:
             - Hidden on mobile unless toggled
@@ -23,7 +23,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         */}
         <Sidebar
           className={`
-            ${sidebarOpen ? 'fixed top-0 left-0 z-50 flex flex-col w-64 max-w-[80vw] bg-background h-full shadow-lg md:shadow-none' : 'hidden md:flex'}
+            ${sidebarOpen ? 'fixed top-0 left-0 z-50 flex flex-col w-64 max-w-[80vw]  h-full shadow-lg md:shadow-none' : 'hidden md:flex'}
             transition-transform
           `}
           open={sidebarOpen}

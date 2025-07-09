@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   BarChart3,
@@ -34,22 +33,23 @@ const Sidebar: React.FC<SidebarProps> = ({ className, open, onClose }) => {
   return (
     <aside
       className={cn(
-        "flex flex-col w-64 border-r bg-background shrink-0 z-50",
-        "fixed md:static h-full md:h-auto",
+        " flex flex-col w-64 border-r  shrink-0 z-50",
+        "fixed md:static h-full md:h-auto bg-white",
         open ? 'block' : 'hidden md:flex',
         className
       )}
       role="navigation"
     >
       {/* Mobile close button */}
-      <div className="flex md:hidden items-center justify-between p-4 border-b">
+      <div className="flex md:hidden items-center bg-white justify-between p-4 border-b">
         <span className="font-bold text-flowform-600">FlowForm</span>
         <button onClick={onClose} aria-label="Close sidebar">
           <X className="h-6 w-6" />
         </button>
       </div>
-      <div className="p-6 flex flex-col space-y-6">
-        {navItems.map((item) => (
+      <div className="p-6 flex bg-white flex-col space-y-6">
+        {navItems.map((item) => {
+          return (
             <NavLink
               key={item.path}
               to={item.path}
@@ -66,7 +66,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className, open, onClose }) => {
               <item.icon size={18} />
               <span>{item.name}</span>
             </NavLink>
-          ))}
+          );
+        })}
       </div>
     </aside>
   );

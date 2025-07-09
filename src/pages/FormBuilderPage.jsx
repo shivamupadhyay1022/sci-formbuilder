@@ -475,7 +475,7 @@ const FormBuilderPage = () => {
         {/* --- Sidebar (Unified for Mobile and Desktop) --- */}
         <div
           className={cn(
-            "bg-background flex flex-col h-full border-r z-50 transition-transform duration-300 ease-in-out",
+            "bg-white flex flex-col h-full border-r z-50 transition-transform duration-300 ease-in-out",
             "fixed w-80 md:static md:w-80 md:flex-shrink-0",
             sidebarOpen ? "translate-x-0" : "-translate-x-full hidden"
           )}

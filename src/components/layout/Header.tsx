@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
       )}
     >
       <div className="flex items-center gap-2 font-semibold text-lg sm:text-xl">
-        <span className="text-flowform-600">Flow</span>
+        <span className="text-flowform-600 ml-16 md:ml-0">Flow</span>
         <span>Form</span>
       </div>
 

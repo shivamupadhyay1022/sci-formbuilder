@@ -7,7 +7,7 @@ interface MobileSidebarToggleProps {
 }
 const MobileSidebarToggle: React.FC<MobileSidebarToggleProps> = ({ onClick }) => (
   <button
-    className="fixed z-40 left-4 top-4 p-2 rounded-full bg-background border border-border shadow-md md:hidden"
+    className="fixed z-40 left-4 top-3 p-2 rounded-full bg-white border border-border shadow-md md:hidden"
     aria-label="Open sidebar"
     onClick={onClick}
   >
