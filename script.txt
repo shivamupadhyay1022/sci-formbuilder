@@ -1,0 +1,258 @@
+/**
+ * Main entry point for POST requests from the React application.
+ * This function reads the 'action' from the incoming request and delegates
+ * to the appropriate handler function.
+ */
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    if (!data.action) {
+      return createJsonResponse({ status: 'error', message: 'No action specified in the request.' }, 400);
+    }
+    switch (data.action) {
+      case 'createSheet':
+        return handleCreateSheet(data);
+      case 'addRow':
+        return handleAddRow(data);
+      default:
+        return createJsonResponse({ status: 'error', message: 'The specified action is not valid.' }, 400);
+    }
+  } catch (error) {
+    return createJsonResponse({ status: 'error', message: 'Invalid JSON payload or server error: ' + error.toString() }, 400);
+  }
+}
+
+/**
+ * Main entry point for GET requests from the React application.
+ * This function explicitly checks for the action or sheetName parameter
+ * to decide which function to run.
+ */
+function doGet(e) {
+  try {
+    // Action 1: Get all sheet names for the 'Forms' page
+    if (e.parameter.action === 'getSheetNames') {
+      return handleGetSheetNames();
+    }
+    
+    // Action 2: Get data for a specific sheet for the 'Analytics' page
+    if (e.parameter.sheetName) {
+      return handleGetSheetData(e);
+    }
+
+    // If neither of the above conditions are met, the request is invalid.
+    return createJsonResponse({ 
+      status: 'error', 
+      message: 'Invalid GET request. Please specify an action (e.g., ?action=getSheetNames) or a sheetName (e.g., ?sheetName=MyForm).' 
+    }, 400);
+
+  } catch (error) {
+    return createJsonResponse({ status: 'error', message: 'An error occurred on the server: ' + error.toString() }, 500);
+  }
+}
+
+/**
+ * Handles fetching data for a single sheet.
+ */
+function handleGetSheetData(e) {
+    const sheetName = e.parameter.sheetName;
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = spreadsheet.getSheetByName(sheetName);
+
+    if (!sheet) {
+      return createJsonResponse({ status: 'error', message: `Sheet with name "${sheetName}" was not found.` }, 404);
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data.shift() || [];
+    
+    const json = data.map(row => {
+      let obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = row[index];
+      });
+      return obj;
+    });
+
+    return createJsonResponse({ status: 'success', data: json });
+}
+
+/**
+ * Handles fetching the names of all sheets in the spreadsheet.
+ */
+function handleGetSheetNames() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = spreadsheet.getSheets();
+  const sheetNames = sheets.map(sheet => ({
+    name: sheet.getName(),
+    id: sheet.getSheetId().toString() // Ensure ID is a string for consistency
+  }));
+  return createJsonResponse({ status: 'success', data: sheetNames });
+}
+
+
+/**
+ * Handles the 'createSheet' action.
+ */
+function handleCreateSheet(data) {
+  const { title, headers } = data;
+  if (!title || !headers || !Array.isArray(headers) || headers.length === 0) {
+    return createJsonResponse({ status: 'error', message: 'Invalid payload for createSheet. It requires a "title" and a non-empty "headers" array.' }, 400);
+  }
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  
+  if (spreadsheet.getSheetByName(title)) {
+    return createJsonResponse({ status: 'error', message: `A sheet with the title "${title}" already exists.` }, 409);
+  }
+
+  const newSheet = spreadsheet.insertSheet(title);
+  newSheet.appendRow(headers);
+  newSheet.setFrozenRows(1);
+
+  return createJsonResponse({ status: 'success', message: `Sheet "${title}" was created successfully.` });
+}
+
+/**
+ * Handles the 'addRow' action.
+ */
+function handleAddRow(data) {
+  const { sheetName, rowData } = data;
+  if (!sheetName || !rowData || typeof rowData !== 'object') {
+    return createJsonResponse({ status: 'error', message: 'Invalid payload for addRow. It requires a "sheetName" and a "rowData" object.' }, 400);
+  }
+
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = spreadsheet.getSheetByName(sheetName);
+
+  if (!sheet) {
+    return createJsonResponse({ status: 'error', message: `The sheet "${sheetName}" could not be found.` }, 404);
+  }
+
+  const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  const newRow = headers.map(header => rowData[header] || ""); 
+  sheet.appendRow(newRow);
+
+  return createJsonResponse({ status: 'success', message: 'The row was added successfully.' });
+}
+
+/**
+ * Helper function to create a standardized JSON response object.
+ */
+function createJsonResponse(payload, statusCode = 200) {
+  payload.statusCode = statusCode;
+  const response = ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+  return response;
+}
+
+File Structure:
+
+C:/Users/shiva/Downloads/Compressed/flowform-builder-studio-main/flowform-builder-studio-main/
+├───.gitignore
+├───bun.lockb
+├───components.json
+├───eslint.config.js
+├───GEMINI.md
+├───index.html
+├───package-lock.json
+├───package.json
+├───postcss.config.js
+├───README.md
+├───script.txt
+├───supabase.jsx
+├───tailwind.config.ts
+├───tsconfig.app.json
+├───tsconfig.json
+├───tsconfig.node.json
+├───vite.config.ts
+├───public/
+│   ├───favicon.ico
+│   ├───placeholder.svg
+│   └───robots.txt
+└───src/
+    ├───App.css
+    ├───App.jsx
+    ├───index.css
+    ├───main.jsx
+    ├───vite-env.d.ts
+    ├───components/
+    │   ├───dashboard/
+    │   ├───form-builder/
+    │   │   ├───FormBuilder.tsx
+    │   │   ├───FormBuilderHeader.tsx
+    │   │   ├───FormBuilderSidebar.tsx
+    │   │   ├───FormCanvas.tsx
+    │   │   └───FormField.tsx
+    │   ├───layout/
+    │   │   ├───Header.tsx
+    │   │   ├───MainLayout.tsx
+    │   │   ├───MobileSidebarToggle.tsx
+    │   │   └───Sidebar.tsx
+    │   └───ui/
+    │       ├───accordion.tsx
+    │       ├───alert-dialog.tsx
+    │       ├───alert.tsx
+    │       ├───aspect-ratio.tsx
+    │       ├───avatar.tsx
+    │       ├───badge.tsx
+    │       ├───breadcrumb.tsx
+    │       ├───button.tsx
+    │       ├───calendar.tsx
+    │       ├───card.tsx
+    │       ├───carousel.tsx
+    │       ├───chart.tsx
+    │       ├───checkbox.tsx
+    │       ├───collapsible.tsx
+    │       ├───command.tsx
+    │       ├───context-menu.tsx
+    │       ├───dialog.tsx
+    │       ├───drawer.tsx
+    │       ├───dropdown-menu.tsx
+    │       ├───form.tsx
+    │       ├───hover-card.tsx
+    │       ├───input-otp.tsx
+    │       ├───input.tsx
+    │       ├───label.tsx
+    │       ├───menubar.tsx
+    │       ├───navigation-menu.tsx
+    │       ├───pagination.tsx
+    │       ├───popover.tsx
+    │       ├───progress.tsx
+    │       ├───radio-group.tsx
+    │       ├───resizable.tsx
+    │       ├───scroll-area.tsx
+    │       ├───select.tsx
+    │       ├───separator.tsx
+    │       ├───sheet.tsx
+    │       ├───sidebar.tsx
+    │       ├───skeleton.tsx
+    │       ├───slider.tsx
+    │       ├───sonner.tsx
+    │       ├───switch.tsx
+    │       ├───table.tsx
+    │       ├───tabs.tsx
+    │       ├───textarea.tsx
+    │       ├───toast.tsx
+    │       ├───toaster.tsx
+    │       ├───toggle-group.tsx
+    │       ├───toggle.tsx
+    │       ├───tooltip.tsx
+    │       └───use-toast.ts
+    ├───hooks/
+    │   ├───use-mobile.tsx
+    │   └───use-toast.ts
+    ├───lib/
+    │   ├───constants.ts
+    │   └───utils.ts
+    └───pages/
+        ├───Analytics.jsx
+        ├───Dashboard.jsx
+        ├───FormBuilderPage.jsx
+        ├───Forms.jsx
+        ├───Index.jsx
+        ├───NotFound.jsx
+        ├───Responses.jsx
+        ├───Settings.jsx
+        ├───Team.jsx
+        └───Templates.jsx
